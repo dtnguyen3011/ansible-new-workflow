@@ -1,0 +1,36 @@
+---
+- debug:
+    msg: "This is SELENA_WIN"
+
+- include_role:
+    name: had.win_vs2015
+
+- name: "SELENA_WIN - Update and install via ITC2"
+  win_command: "{{ itc_command }}"
+  loop:
+    - updateITC2.exe
+    - itc2 install IF:VAG-basedOnBtc610   # TCC\Tools\cmake\3.20.6_WIN64 | TCC\Tools\boost\1.63.0_WIN64
+    - itc2 install OD:12.2    # TCC\Tools\cmake\3.20.6_WIN64 | TCC\Tools\boost\1.63.0_WIN64
+    - itc2 install RadarGen5CI:3.3.9-1
+    - itc2 install Selena:DevLatest # TCC\Tools\boost\1.63.0_WIN64
+    # - itc2 install ACA:0.5.5 -l cmake # TCC\Tools\cmake\3.17.1_WIN64
+  loop_control:
+    loop_var: itc_command
+
+- name: "SELENA_WIN - Set system environment"
+  win_environment:
+    name: "{{ tool_info.name }}"
+    value: "{{ tool_info.value }}"
+    level: "{{ tool_info.level }}"
+  loop:
+    - { name: "BOOST_ROOT", value: "C:\\TCC\\Tools\\boost\\1.63.0_WIN64", level: machine}
+  loop_control:
+    loop_var: tool_info
+
+# - name: "SELENA_WIN - Set PATH environment"
+#   win_path:
+#     elements:
+#       - 'C:\TCC\Tools\cmake\3.17.1_WIN64\bin'
+
+- name: "Reboot"
+  win_reboot:

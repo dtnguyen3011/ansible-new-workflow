@@ -1,0 +1,25 @@
+---
+## New Workflow of Ansible
+#
+# param1: HOSTNAME
+# param2: LABEL
+#         - win10_swarm / osd5_swarm / linux_static / linux_selena
+#         - lightweight / pr_check / lucx_agent / win10_light
+#         - qac_delta / qac_server
+#         - 2performance_coverity # job PAR_SCA_COVERITY
+#
+# Author: Lam Trien Lap (MS/EDA22)
+#
+# TESTING : 
+#   ansible-playbook playbooks/Radar5/Radar5_build_agent.yml --vault-id ~/.vaultId-Gen5 -i inventory/ra5/inventory_Radar5.yml -e group_name=rng-zeng11w005.rng.de.bosch.com -e label=lightweight
+#   ansible-playbook playbooks/Radar5/Radar5_build_agent.yml --vault-id ~/.vaultId-Gen5 -i inventory/ra5/inventory_Radar5.yml -e group_name=rng-zeng11w005.rng.de.bosch.com -e label=2performance_coverity
+#   ansible-playbook playbooks/Radar5/Radar5_build_agent.yml --vault-id ~/.vaultId-Gen5 -i inventory/ra5/inventory_Radar5.yml -e group_name=rng-zeng11w005.rng.de.bosch.com -e label=pr_check
+#   ansible-playbook playbooks/Radar5/Radar5_build_agent.yml --vault-id ~/.vaultId-Gen5 -i inventory/ra5/inventory_Radar5.yml -e group_name=rng-zeng11w005.rng.de.bosch.com -e label=lucx_agent
+#   ansible-playbook playbooks/Radar5/Radar5_build_agent.yml --vault-id ~/.vaultId-Gen5 -i inventory/ra5/inventory_Radar5.yml -e group_name=rng-zeng11w005.rng.de.bosch.com -e label=qac_delta
+#   ansible-playbook playbooks/Radar5/Radar5_build_agent.yml --vault-id ~/.vaultId-Gen5 -i inventory/ra5/inventory_Radar5.yml -e group_name=rng-zeng11w005.rng.de.bosch.com -e label=win10_swarm
+#
+##
+
+- hosts: "{{ group_name }}"
+  roles:
+    - role: jenkins_agent

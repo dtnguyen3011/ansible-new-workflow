@@ -1,0 +1,90 @@
+---
+- name: "Pre-check"
+  fail:
+    msg: "ERROR - jenkins_home is not defined"
+  when: jenkins_home is not defined
+
+- name: "Set variable"
+  set_fact:
+    repo_folder: "{{ jenkins_home }}\\ws\\commonrepo"
+    sub_folder: "repo"
+
+- name: "Set variable for label lucx_agent"
+  set_fact:
+    repo_folder: "{{ jenkins_home }}\\ws\\lucx_agent"
+    sub_folder: "commonrepo"
+  when: label == "lucx_agent"
+
+- name: "Set variable for commonrepo folder in case only 1 executor or not defined"
+  set_fact:
+    origin_folder: "{{ repo_folder }}@1"
+
+- name: "Set variable for commonrepo folder for multiple executors"
+  set_fact:
+    origin_folder: "{{ repo_folder }}@X"
+    executor_folder: "{{ repo_folder }}@"
+  when: jenkins_executors is defined and jenkins_executors > 1
+
+- name: "Check lucx_agent dir"
+  win_stat:
+    path: "{{ repo_folder }}"
+  when: label == "lucx_agent"
+  register: lucx_agent_dir
+
+- name: "Check not lucx_agent dir"
+  win_stat:
+    path: "{{ repo_folder }}@1"
+  when: label != "lucx_agent"
+  register: commonrepo_dir
+
+- block:
+    - name: "Setup repo folder for repo checkout"
+      win_file:
+        state: directory
+        path: "{{ origin_folder }}"
+
+    - name: "Initial clone commonrepo"
+      win_shell: "git lfs clone ssh://git@sourcecode01.de.bosch.com:7999/vwag_e3/commonrepo.git {{ sub_folder }}"
+      args:
+        chdir: "{{ origin_folder }}"
+      ignore_errors: True
+
+    - name: "Initial checkout commonrepo"
+      win_shell: "{{ git_command }}"
+      loop:
+        - git checkout
+        - git reset --hard
+        - git clean -xffd
+        - git lfs pull
+      loop_control:
+        loop_var: git_command
+      args:
+        chdir: "{{ origin_folder }}\\{{ sub_folder }}"
+
+    - name: "Initial checkout submodule in commonrepo"
+      win_shell: "{{ git_submodule_command }}"
+      loop:
+        - git submodule sync --recursive
+        - git submodule update -f --init --recursive
+        - git submodule foreach --recursive git reset --hard HEAD
+        - git submodule foreach --recursive git clean -xffd
+        - git submodule foreach --recursive git lfs pull
+      loop_control:
+        loop_var: git_submodule_command
+      args:
+        chdir: "{{ origin_folder }}\\{{ sub_folder }}"
+      when: label != "pr_check"
+
+    - name: "Sync commonrepoX to executor folder"
+      win_robocopy:
+        src: "{{ origin_folder }}"
+        dest: "{{ executor_folder }}{{ item }}"
+        recurse: yes
+      with_sequence: count="{{ jenkins_executors }}"
+      when: jenkins_executors is defined and jenkins_executors > 1
+
+    - name: "Rename lucx_agent@1 to be lucx_agent"
+      win_command: Rename-Item "{{ repo_folder }}@1" "{{ repo_folder }}"
+      when: label == "lucx_agent"
+  when: (lucx_agent_dir.stat is defined and not lucx_agent_dir.stat.exists)
+    or (commonrepo_dir.stat is defined and not commonrepo_dir.stat.exists)

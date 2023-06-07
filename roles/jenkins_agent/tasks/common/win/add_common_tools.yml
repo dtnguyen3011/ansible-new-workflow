@@ -1,0 +1,66 @@
+---
+- name: "Set variable"
+  set_fact:
+    tool_folder: "C:\\tools"
+    doit_url: "http://abtv55162.de.bosch.com:8084/doit-mirror/"
+    tool_list:
+      - { download_dir: "ProcessExplorer", zip_file_name: "ProcessExplorer", exe_file_name: "procexp64.exe" }
+      - { download_dir: "TreeSize", zip_file_name: "TreeSizeFree-Portable", exe_file_name: "TreeSizeFree.exe" }
+
+- name: "Setup {{ tool_folder }} folder"
+  win_file:
+    state: directory
+    path: "{{ tool_folder }}"
+
+- name: "Download tools"
+  win_get_url:
+    url: "{{ doit_url }}{{ tool_item.download_dir }}/{{ tool_item.zip_file_name }}.zip"
+    dest: "{{ tool_folder }}"
+  retries: 2
+  delay: 10
+  with_items: "{{ tool_list }}"
+  loop_control:
+    loop_var: tool_item
+  register: result
+  until: result is succeeded
+
+- name: "Unpack zip file"
+  win_unzip:
+    src: "{{ tool_folder }}\\{{ tool_item.zip_file_name }}.zip"
+    dest: "{{ tool_folder }}\\{{ tool_item.zip_file_name }}"
+    creates: "{{ tool_folder }}\\{{ tool_item.zip_file_name }}"
+    delete_archive: yes
+  with_items: "{{ tool_list }}"
+  loop_control:
+    loop_var: tool_item
+
+# - name: "Create a shortcut"
+#   win_shortcut:
+#     src: "{{ tool_folder }}\\{{ tool_item.zip_file_name }}\\{{ tool_item.exe_file_name }}"
+#     dest: "C:\\Users\\{{ sysuser.name }}\\AppData\\Roaming\\Microsoft\\Internet Explorer\\Quick Launch\\User Pinned\\TaskBar\\{{ tool_item.exe_file_name }}.lnk"
+#   with_items: "{{ tool_list }}"
+#   loop_control:
+#     loop_var: tool_item
+
+# - name: "Pin to taskbar"
+#   win_shell:
+#     command: 'Write-Verbose "Pinned to taskbar"'
+#     verb: 'pin to taskbar'
+#     file_path: "C:\\Users\\{{ sysuser.name }}\\AppData\\Roaming\\Microsoft\\Internet Explorer\\Quick Launch\\User Pinned\\TaskBar\\{{ tool_item.exe_file_name }}.lnk"
+#   with_items: "{{ tool_list }}"
+#   loop_control:
+#     loop_var: tool_item
+
+# - name: Pin program procexp64.lnk to the taskbar
+#   win_shell: |
+#     $TargetFile = "C:\tools\ProcessExplorer\procexp64.exe"
+#     $ShortcutFile = "$env:USERPROFILE\AppData\Roaming\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar\procexp64.lnk"
+#     $WScriptShell = New-Object -ComObject WScript.Shell
+#     $Shortcut = $WScriptShell.CreateShortcut($ShortcutFile)
+#     $Shortcut.TargetPath = $TargetFile
+#     $Shortcut.Save()
+#     $TaskbarPath = [Environment]::GetFolderPath("ApplicationData") + "\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar"
+#     $TaskbarPath = $TaskbarPath + "\\procexp64.lnk"
+#     if(Test-Path $TaskbarPath){
+#       & "$env:SYSTEMROOT\System32\WindowsPowerShell\v1.0\powershell.exe" -Command "& {$taskbar = New-Object -ComObject Shell.Application; $taskbar.NameSpace($TaskbarPath).Verbs() | % { if ($_.Name -eq 'Pin to Taskbar') {$_.DoIt()}}}"
+#     }

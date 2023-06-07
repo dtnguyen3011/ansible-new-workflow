@@ -1,0 +1,38 @@
+---
+##################################################
+## COMMON things for WINDOW agent
+##################################################
+  - include_role:
+      name: '{{ role_item }}'
+    loop:
+      - had.win_7z
+      - had.win_git
+      - had.win_notepad
+      - had.win_itc
+      - had.win_pdv_dotnet
+      - had.win_telegraf
+    loop_control:
+      loop_var: role_item
+
+  - name: "Reset after added new value to PATH"
+    include_role:
+      name: had.win_ssh_reset
+    when: ansible_connection == "ssh"
+
+  - include_tasks: "{{ item }}"
+    loop:
+      - win/clone_repo.yml
+      - win/add_common_tools.yml
+    when: label != "lightweight"
+
+  - include_tasks: "{{ item }}"
+    loop:
+      - win/update_tcc_itc2.yml
+      - win/enable_config.yml
+      # - win/add_python3_for_mtupdate.yml ???
+      # - win/add_env.yml => not need if run full
+      # - win/check_share_path.yml # take too long time !!!
+    when: label != "lightweight" and label != "2performance_coverity"
+
+  - include_tasks: win/update_services.yml
+    when: machine_type is defined and machine_type == "Biaas"

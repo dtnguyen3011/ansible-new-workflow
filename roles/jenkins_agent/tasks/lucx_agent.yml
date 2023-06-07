@@ -1,0 +1,14 @@
+---
+- debug:
+    msg: "This is LUCX_AGENT. It needs commonrepo inside lucx_agent folder"
+
+- name: "LUCX_AGENT - Update and install via ITC2"
+  win_command: "{{ item }}"
+  with_items:
+    - updateITC2.exe
+    - itc2 install RadarGen5CI:3.3.9 -l graphviz
+
+- name: "LUCX_AGENT - Set graphviz to PATH environment variable"
+  win_path:
+    elements:
+      - 'C:\TCC\Tools\graphviz\2.38_WIN64\bin'

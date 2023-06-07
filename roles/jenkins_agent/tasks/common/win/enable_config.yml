@@ -1,0 +1,34 @@
+---
+- name: "Enable windows regedit"
+  win_regedit:
+    path: "{{ reg_item.path }}"
+    name: "{{ reg_item.name }}"
+    data: 1
+    type: dword
+  with_items:
+    - { path: 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem', name: "LongPathsEnabled" }
+    - { path: 'HKLM:\SOFTWARE\Microsoft\Command Processor', name: "DelayedExpansion" }
+    - { path: 'HKCU:\SOFTWARE\Microsoft\Command Processor', name: "DelayedExpansion" }
+  loop_control:
+    loop_var: reg_item
+
+- name: "Reset all git config"
+  win_command:
+    "git config --{{ git_item.scope }} --unset-all {{ git_item.name }}"
+  with_items:
+    - { name: "core.longpaths", value: "true", scope: system }
+    - { name: "user.name", value: "\"{{ git_user_full_name }}\"", scope: global }
+    - { name: "user.email", value: "{{ git_user_email }}", scope: global }
+  loop_control:
+    loop_var: git_item
+  ignore_errors: true
+
+- name: "Configure git"
+  win_command:
+    "git config --{{ git_item.scope }} --add {{ git_item.name }} {{ git_item.value }}"
+  with_items:
+    - { name: "core.longpaths", value: "true", scope: system }
+    - { name: "user.name", value: "\"{{ git_user_full_name }}\"", scope: global }
+    - { name: "user.email", value: "{{ git_user_email }}", scope: global }
+  loop_control:
+    loop_var: git_item

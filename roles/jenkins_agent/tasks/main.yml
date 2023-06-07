@@ -1,0 +1,55 @@
+---
+  - include_tasks: common_check.yml
+    tags:
+    - always
+
+  - include_tasks: common.yml
+    tags:
+    - always
+
+  - include_tasks: "{{ item }}"
+    loop:
+      - sw_test.yml
+      - ecu_target.yml
+      - selena_win.yml
+      - mt.yml
+    when: label == "win10_swarm" or label == "win10_light"
+
+  - include_tasks: selena_linux.yml
+    when: label == "osd5_swarm" or label == "linux_selena"
+
+  - include_tasks: cloe.yml
+    when: label == "osd5_swarm" or label == "linux_static"
+
+  - include_tasks: coverity.yml
+    when: label == "2performance_coverity"
+
+  - include_tasks: qac.yml
+    when: label == "qac_delta" or label == "qac_server"
+
+  - include_tasks: pr_check.yml
+    when: label == "pr_check"
+
+  - include_tasks: lucx_agent.yml
+    when: label == "lucx_agent"
+
+  - include_tasks: lightweight.yml
+    when: label == "lightweight"
+
+# - name: Handle the error
+#   block:
+#     - name: Print a message
+#       ansible.builtin.debug:
+#         msg: 'I execute normally'
+
+#     - name: Force a failure
+#       win_command: /bin/false
+
+#     - name: Never print this
+#       ansible.builtin.debug:
+#         msg: 'I never execute, due to the above task failing, :-('
+#   when: label == "win10_swarm"
+#   rescue:
+#     - name: Print when errors
+#       ansible.builtin.debug:
+#         msg: 'I caught an error, can do stuff here to fix it, :-)'

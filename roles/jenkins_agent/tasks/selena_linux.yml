@@ -1,0 +1,3 @@
+---
+- debug:
+    msg: "This is SELENA_LINUX, and no special setting is provided"

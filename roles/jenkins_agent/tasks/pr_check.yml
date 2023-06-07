@@ -1,0 +1,6 @@
+---
+- debug:
+    msg: "This is PR_CHECK, and it needs commonrepo without submodules"
+
+- name: "Update and install via ITC2"
+  win_command: itc2 install RadarGen5CI:3.3.9

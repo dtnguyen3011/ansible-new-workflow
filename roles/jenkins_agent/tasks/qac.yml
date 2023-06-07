@@ -1,0 +1,18 @@
+---
+- debug:
+    msg: "This is QAC"
+
+- name: "QAC - Update and install via ITC2"
+  win_command: "{{ item }}"
+  with_items:
+    - updateITC2.exe
+    - itc2 install RadarGen5CI:3.3.9
+    - itc2 install RadarGen5CI:3.3.9-1
+    - itc2 install RadarGen5CI:3.3.20
+    - itc2 install IF:VAG-basedOnBtc610
+
+# - name: "QAC_Server - Add PRQA"
+#   win_unzip:
+#     src: \\abtvdfs2.de.bosch.com\ismdfs\iad\radar5_ci\test\PRQA.zip
+#     dest: "C:\\Users\\{{ sysuser.name }}\\AppData\\Local\\PRQA"
+#   when: label == "qac_server"

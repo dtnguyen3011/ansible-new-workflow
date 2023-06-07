@@ -1,0 +1,21 @@
+label_lists:
+  win_label_lists:
+    - win10_swarm
+    - lightweight
+    - pr_check
+    - lucx_agent
+    - win10_light
+    - qac_delta
+    - qac_server
+    - 2performance_coverity
+  linux_label_lists:
+    - osd5_swarm
+    - linux_static
+    - linux_selena
+    - lightweight
+
+jenkins_service_name:
+  - BIaaSNG_Jenkins
+  - Jenkins_JNLP_worker
+  - Jenkins_JET_JNLP_worker
+  - Jenkins_DEV_JNLP_worker

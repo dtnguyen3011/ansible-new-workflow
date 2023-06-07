@@ -1,0 +1,26 @@
+---
+- debug:
+    msg: "This is MT"
+
+- include_role:
+    name: had.win_canape
+  vars:
+    win_canape_package_version: "CANape18.0.51.15"
+
+# A2L
+- include_role:
+    name: had.win_asap
+  vars:
+    win_asap_package_version: "{{ tool_item.version }}"
+    win_asap_version_dir: "{{ tool_item.version_dir }}"
+  with_items:
+    - { version: "V16.0_SP5_Beta", version_dir: "ASAP2 Tool-Set 16.0" }
+    - { version: "V15.0_SP6", version_dir: "ASAP2 Tool-Set 15.0" }
+  loop_control:
+    loop_var: tool_item
+
+- include_role:
+    name: had.win_vs2015
+
+- include_role:
+    name: had.win_vs2019

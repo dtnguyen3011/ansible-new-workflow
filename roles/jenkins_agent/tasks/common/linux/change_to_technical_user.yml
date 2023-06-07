@@ -1,0 +1,42 @@
+---
+- name: "Check {{ sysuser.name }} is contained in /etc/passwd"
+  shell: "grep -c {{ sysuser.name }} /etc/passwd"
+  register: user_count
+  ignore_errors: true
+
+- name: "Get {{ sysuser.name }} info"
+  shell: "getent passwd {{ sysuser.name }}"
+  register: user_info
+  when: user_count.stdout == "0"
+
+- name: "Add to /etc/passwd"
+  shell: "echo \"{{ user_info.stdout }}\" >> /etc/passwd"
+  become: yes
+  register: user_info
+  when: user_count.stdout == "0"
+
+- name: "Change user to run BiaaS service"
+  lineinfile:
+    path: /etc/rc.local
+    regexp: '^/var/lib/BiaaS-NG-LinuxClient/connect_with_logging.sh &'
+    line: "su {{ sysuser.name }} -l -c '/var/lib/BiaaS-NG-LinuxClient/connect_with_logging.sh' &"
+  become: yes
+  register: update_status
+
+- name: "Clean old jenkins file"
+  shell: "{{ command_item }}"
+  become: yes
+  with_items:
+    - rm /var/lib/BiaaS-NG-LinuxClient/slave.jar
+    - rm -rf /var/jenkins/remoting
+    - rm -rf /var/jenkins/workspace
+    - chown {{ sysuser.name }} /var/jenkins
+    - chmod 755 /var/jenkins/
+  loop_control:
+    loop_var: command_item
+  when: update_status.changed == true
+
+- name: "Reboot"
+  reboot:
+  become: yes
+  when: update_status.changed == true or user_count.stdout == "0"

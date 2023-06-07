@@ -1,0 +1,15 @@
+---
+##################################################
+## COMMON things for LINUX agent
+################################################## 
+  - include_tasks: "{{ item }}"
+    loop:
+    - linux/add_ssh_key.yml
+    - linux/install_tool.yml
+    - linux/config_git.yml
+    - linux/config_docker.yml
+    - linux/clone_repo.yml
+    - linux/cron_update_repo.yml
+
+  - include_tasks: linux/change_to_technical_user.yml
+    when: machine_type is defined and machine_type == "Biaas"

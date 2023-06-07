@@ -1,0 +1,45 @@
+---
+- name: "Reset all git config"
+  shell: "git config --{{ item.scope }} --unset-all {{ item.name }}"
+  become: "{{ item.become_flag }}"
+  with_items:
+    - { name: "core.longpaths", value: "true", scope: system, become_flag: yes }
+    - { name: "user.name", value: "\"{{ git_user_full_name }}\"", scope: global, become_flag: no }
+    - { name: "user.email", value: "{{ git_user_email }}", scope: global, become_flag: no }
+  ignore_errors: true
+
+- name: "Configure git"
+  shell: "git config --{{ item.scope }} --add {{ item.name }} {{ item.value }}"
+  become: "{{ item.become_flag }}"
+  with_items:
+    - { name: "core.longpaths", value: "true", scope: system, become_flag: yes }
+    - { name: "user.name", value: "\"{{ git_user_full_name }}\"", scope: global, become_flag: no }
+    - { name: "user.email", value: "{{ git_user_email }}", scope: global, become_flag: no }
+
+- name: "Add pip conf"
+  template:
+    dest: "/etc/pip.conf"
+    src: ../templates/pip.ini.j2
+    force: false
+  become: yes
+
+- name: "Add bcr url to OS no proxy"
+  lineinfile:
+    path: "/etc/profile.d/osd-proxy-package.sh"
+    insertbefore: 'export no_proxy='
+    line: '    no_proxy="${no_proxy},bosch.cloud"'
+  become: yes
+
+- name: "Add bcr url to docker no proxy"
+  lineinfile:
+    path: /etc/systemd/system/docker.service.d/http-proxy.conf
+    regexp: '^Environment="HTTPS_PROXY=http://localhost:3128" "HTTP_PROXY=http://localhost:3128" "NO_PROXY=localhost,127.0.0.1,.bosch.com"'
+    line: 'Environment="HTTPS_PROXY=http://localhost:3128" "HTTP_PROXY=http://localhost:3128" "NO_PROXY=localhost,127.0.0.1,.bosch.com,.bosch.cloud"'
+  become: yes
+
+- name: "Restart Docker"
+  shell: "{{ item }}"
+  become: yes
+  with_items:
+    - "systemctl daemon-reload"
+    - "systemctl restart docker"

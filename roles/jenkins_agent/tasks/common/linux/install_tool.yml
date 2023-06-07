@@ -1,0 +1,55 @@
+---
+- name: "Install required tools on Debian"
+  apt:
+    name: "{{ tool_name }}"
+    state: present
+    force_apt_get: yes
+  become: yes
+  with_items:
+    - python3-pip
+    - python3-virtualenv
+    - virtualenv
+    - git-all
+    - git-lfs
+    - openjdk-11-jdk
+    - docker-ce
+    - docker-ce-cli
+    - containerd.io
+  loop_control:
+    loop_var: tool_name
+  when: ansible_os_family == "Debian"
+
+- name: "Install required tools on Redhat"
+  yum:
+    name: "{{ tool_name }}"
+    state: present
+  become: yes
+  with_items:
+    - python3-pip
+    - python3-virtualenv
+    - virtualenv
+    - git-all
+    - git-lfs
+    - java-11-openjdk
+    - java-11-openjdk-devel
+    - docker-ce
+    - docker-ce-cli
+    - containerd.io
+  loop_control:
+    loop_var: tool_name
+  when: ansible_os_family == "RedHat"
+
+- name: "Execute command with sudo"
+  shell: "{{ command_item }}"
+  become: yes
+  with_items:
+    - groupadd docker
+    - usermod -aG docker {{ sysuser.name }}
+  loop_control:
+    loop_var: command_item
+  ignore_errors: true
+
+- name: "Reboot"
+  reboot:
+    reboot_timeout: 1200
+  become: yes

@@ -1,0 +1,14 @@
+---
+  - debug:
+      var: label_lists
+  - name: "Verify param <label>"
+    fail:
+      msg: "Param <label> is NOT correct !!!"
+    when: label is not defined or (label not in label_lists.win_label_lists and label not in label_lists.linux_label_lists)
+  - name: "Verify param <label> and host OS"
+    fail:
+      msg: "Label {{ label }} and OS of this host {{ inventory_hostname }} is NOT compatible !!!"
+    when:
+      - label != "lightweight"
+      - (label in label_lists.win_label_lists and ansible_os_family != "Windows") or
+        (label in label_lists.linux_label_lists and ansible_os_family == "Windows")

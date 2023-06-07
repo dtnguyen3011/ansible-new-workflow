@@ -1,0 +1,10 @@
+jenkins_home: "/var/jenkins/"
+ansible_connection: ssh
+ansible_port: 22
+
+ansible_user: "{{ sysuser.name }}"
+ansible_ssh_pass: "{{ sysuser.pass }}"
+ansible_become_pass: "{{ sysuser.pass }}"
+
+git_user_fullname: "{{ sysuser.full_name }}"
+git_user_email: "{{ sysuser.email }}"

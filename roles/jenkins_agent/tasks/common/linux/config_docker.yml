@@ -1,0 +1,21 @@
+---
+- name: "Add bcr url to OS no proxy"
+  lineinfile:
+    path: "/etc/profile.d/osd-proxy-package.sh"
+    insertbefore: 'export no_proxy='
+    line: '    no_proxy="${no_proxy},bosch.cloud"'
+  become: yes
+
+- name: "Add bcr url to docker no proxy"
+  lineinfile:
+    path: /etc/systemd/system/docker.service.d/http-proxy.conf
+    regexp: '^Environment="HTTPS_PROXY=http://localhost:3128" "HTTP_PROXY=http://localhost:3128" "NO_PROXY=localhost,127.0.0.1,.bosch.com"'
+    line: 'Environment="HTTPS_PROXY=http://localhost:3128" "HTTP_PROXY=http://localhost:3128" "NO_PROXY=localhost,127.0.0.1,.bosch.com,.bosch.cloud"'
+  become: yes
+
+- name: "Restart Docker"
+  shell: "{{ item }}"
+  become: yes
+  with_items:
+    - "systemctl daemon-reload"
+    - "systemctl restart docker"

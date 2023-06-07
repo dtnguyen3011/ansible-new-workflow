@@ -1,0 +1,10 @@
+win_7z_force_install: false
+win_git_update: false
+win_notepad_force_install: false
+win_itc2_force_install: false
+win_pdv_dotnet_force_install: false
+win_telegraf_action_flag: "check" # define in inventory as not at all agents need it
+win_vs2015_force_install: false
+win_vs2019_force_install: false
+win_canape_force_install: false
+win_asap_action: "check"

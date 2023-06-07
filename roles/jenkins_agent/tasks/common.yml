@@ -1,0 +1,7 @@
+---
+- debug:
+    msg: "This file will install all COMMON tools/environment for {{ ansible_os_family }}"
+- include_tasks: common/common_win.yml
+  when: ansible_os_family == "Windows"
+- include_tasks: common/common_linux.yml
+  when: ansible_os_family != "Windows"

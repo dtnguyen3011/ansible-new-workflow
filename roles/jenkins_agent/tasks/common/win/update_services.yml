@@ -1,0 +1,19 @@
+---
+- name: Add runtime user to "Log on as a service" policiy
+  win_user_right:
+    name: SeServiceLogonRight
+    users:
+      - "{{ win_jenkins_service.username }}"
+    action: add
+
+- name: "Update Jenkins Service"
+  win_service:
+    name: "{{ item }}"
+    username: "{{ win_jenkins_service.username }}"
+    password: "{{ win_jenkins_service.password }}"
+    start_mode: auto
+    state: restarted
+    update_password: always
+  with_items:
+    - "{{ jenkins_service_name }}"
+  ignore_errors: true

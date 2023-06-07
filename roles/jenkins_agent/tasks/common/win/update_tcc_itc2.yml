@@ -1,0 +1,10 @@
+---
+- name: "Update and install via ITC2"
+  win_command: "{{ itc2_command }}"
+  loop:
+    - updateITC2.exe
+    # - itc2 install RadarGen5CI:3.3.9
+    # - itc2 install ACA:0.4
+    # - itc2 install Selena:DevLatest
+  loop_control:
+    loop_var: itc2_command
